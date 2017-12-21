@@ -1,17 +1,28 @@
 require 'tempfile'
 
-VERSION = File.open('VERSION') { |fp| fp.read().chomp() }
+def find_version
+  line = File.open('setup.py') { |fp| fp.readlines.find { |n| n =~ /@@VERSION@@/ } }
+  raise "could not read version from setup.py" if line.nil?
+  v = line[/VERSION=['"]([^'"]+)['"]/, 1]
+  raise "failed to extract version from line: #{line}" if v.nil?
+  v
+end
 
+VERSION = find_version
 DIST_DIR = 'dist'
+BUILD_DIR = './build'
 WHEEL_FILE = "#{DIST_DIR}/slyphon_zshhist_backup-#{VERSION}-py3-none-any.whl"
 PEX_FILE = "#{DIST_DIR}/zshhist.pex"
 
 
 directory DIST_DIR
+directory BUILD_DIR
 
-file WHEEL_FILE => DIST_DIR do
-  sh "pip3 wheel -w #{DIST_DIR} ."
+file WHEEL_FILE => [DIST_DIR, BUILD_DIR] do
+  sh "pip3 wheel -b #{BUILD_DIR} -w #{DIST_DIR} ."
 end
+
+task :wheel => WHEEL_FILE
 
 def tempfile(*a)
   t = Tempfile.new(*a)
@@ -23,16 +34,14 @@ def tempfile(*a)
 end
 
 file PEX_FILE => WHEEL_FILE do
-  #pex -r requirements.txt -m slyphon.zshbackup.app:main --python-shebang='/usr/bin/env python3' -o /tmp/zsh-hist-backup.pex --python=python3 -f $PWD -r <(echo 'slyphon-zshhist-backup')
-
   tempfile('other-reqs') do |tmp|
-    tmp.puts('slyphon-zshhist-backup')
+    tmp.puts('zshbackup')
     tmp.flush()
-    sh "pex -r requirements.txt -s slyphon.zshbackup.app -e slyphon.zshbackup.app:main --python-shebang='/usr/bin/env python3' -o #{PEX_FILE} --python=python3 -f #{DIST_DIR} -r #{tmp.path}"
+    sh "pex -r requirements.txt -e zshbackup.app:main --python-shebang='/usr/bin/env python3' -o #{PEX_FILE} --python=python3 -f #{DIST_DIR} -r #{tmp.path}"
   end
 end
 
-CLEANUP = FileList[WHEEL_FILE, PEX_FILE]
+CLEANUP = FileList['dist', 'zshbackup.egg-info', 'build']
 
 task :build => PEX_FILE
 

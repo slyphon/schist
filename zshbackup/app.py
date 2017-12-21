@@ -235,6 +235,7 @@ def main():
     default='INFO'
   )
 
+  parser.set_defaults(func=lambda _: parser.print_help())
 
   sub = parser.add_subparsers()
   backup_p = sub.add_parser('backup')

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 
 from __future__ import print_function
 
@@ -15,6 +15,8 @@ from collections import defaultdict
 from contextlib import contextmanager
 from logging import DEBUG, INFO
 from textwrap import dedent
+
+import arrow
 
 log = logging.getLogger(__name__)
 
@@ -148,9 +150,41 @@ def cmd_restore(req):
       print(": {ts}:0;{cmd}".format(ts=ts, cmd=row[0].encode('utf-8')), file=req.output)
 
 
+def cmds_since(conn, ts):
+  return conn.execute(
+    "select count(*) as c from history where timestamp > ?", (ts,)).fetchone()[0]
+
+def last_cmd(conn):
+  last_ts = conn.execute(
+    "select timestamp as ts from history order by rowid DESC limit 1").fetchone()['ts']
+
+  return arrow.get(last_ts).to('local')
+
+
 def cmd_stats(req):
   with open_conn(req.dbpath) as conn:
     init_db(conn)
+    now = arrow.now()
+
+    last_cmd_t = last_cmd(conn)
+
+    delta = (now - last_cmd_t)
+
+
+    print(dedent("""\
+      {hr:>5d} rows in the past hour
+      {day:>5d} rows in the past day
+      {week:>5d} rows in the past week
+      last command backed up at: {last}
+                      which was: {min}m {s}s ago
+    """.format(
+      hr=cmds_since(conn, now.shift(hours=-1).timestamp),
+      day=cmds_since(conn, now.shift(hours=-24).timestamp),
+      week=cmds_since(conn, now.shift(days=-7).timestamp),
+      last=str(last_cmd_t),
+      min=int(delta.seconds/60),
+      s=int(delta.seconds % 60),
+    )))
 
 
 def logging_setup(level):

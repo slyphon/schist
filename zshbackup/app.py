@@ -214,9 +214,14 @@ def logging_setup(level):
   })
 
 
+def cmd_help(req):
+  req.print_help()
+
 
 def main():
   parser = argparse.ArgumentParser(prog='zsh-backup')
+
+  parser.set_defaults(print_help=parser.print_help)
 
   parser.add_argument(
       '-p' '--zsh-hist-path', dest='histfile',
@@ -235,7 +240,7 @@ def main():
     default='INFO'
   )
 
-  parser.set_defaults(func=lambda _: parser.print_help())
+  parser.set_defaults(func=cmd_help)
 
   sub = parser.add_subparsers()
   backup_p = sub.add_parser('backup')
@@ -251,6 +256,9 @@ def main():
 
   stats_p = sub.add_parser('stats')
   stats_p.set_defaults(func=cmd_stats)
+
+  help_p = sub.add_parser('help')
+  help_p.set_defaults(func=cmd_help)
 
   parsed = parser.parse_args()
   logging_setup(parsed.log_lvl)

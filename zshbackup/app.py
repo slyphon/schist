@@ -48,7 +48,7 @@ def open_conn(path, *a):
 def table_exists(conn):
   cursor = conn.cursor()
   cursor.execute(
-    "SELECT name from sqlite_master WHERE type='table' AND name='{0}'".format(TABLE_NAME)
+    "SELECT name from sqlite_master WHERE type='table' AND name=?", (TABLE_NAME,)
   )
 
   return len(cursor.fetchall()) > 0

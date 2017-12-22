@@ -92,9 +92,8 @@ def history_iter(fp):
 
       d = dict(timestamp=ts, command=cmd, counter=0)
 
-      if ts in countdict:
-        countdict[ts] += 1
-        d['counter'] = countdict[ts]
+      d['counter'] = countdict[ts]
+      countdict[ts] += 1
 
       yield d
     else:
@@ -176,14 +175,13 @@ def cmd_stats(req):
       {day:>5d} rows in the past day
       {week:>5d} rows in the past week
       last command backed up at: {last}
-                      which was: {min}m {s}s ago
-    """.format(
+                      which was: {min}m {s}s ago""".format(
       hr=cmds_since(conn, now.shift(hours=-1).timestamp),
       day=cmds_since(conn, now.shift(hours=-24).timestamp),
       week=cmds_since(conn, now.shift(days=-7).timestamp),
       last=str(last_cmd_t),
-      min=int(delta.seconds/60),
-      s=int(delta.seconds % 60),
+      min=int(delta.total_seconds()/60),
+      s=int(delta.total_seconds() % 60),
     )))
 
 
@@ -224,7 +222,7 @@ def main():
   parser.set_defaults(print_help=parser.print_help)
 
   parser.add_argument(
-      '-p' '--zsh-hist-path', dest='histfile',
+      '-p', '--zsh-hist-path', dest='histfile',
       help='path to .zshhist file',
       default=ZSHHIST_PATH)
 

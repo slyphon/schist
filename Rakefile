@@ -30,7 +30,7 @@ def tempfile(*a)
   begin
     yield t
   ensure
-    t.close
+    t.close unless t.closed?
   end
 end
 
@@ -68,8 +68,14 @@ task :run do
   end
 end
 
+INSTALL_DIR = File.expand_path("~/local/bin")
+INSTALL_DEST = File.join(INSTALL_DIR, "zshhist")
+
 task :install do
-  install PEX_FILE, File.expand_path("~/local/bin/zshhist"), :mode => 0755
+  tempfile('zshhist', :tmpdir => INSTALL_DIR) do |tmp|
+    install PEX_FILE, tmp.path, :mode => 0755
+    mv tmp.path, INSTALL_DEST
+  end
 end
 
 task :all => [:clean, :build, :run]

@@ -39,9 +39,17 @@ file PEX_FILE => WHEEL_FILE do
     tempfile('other-reqs') do |tmp|
       tmp.puts('zshbackup')
       tmp.flush()
-      cmd = "pex --pex-root=#{tmpdir} -r requirements.txt -e zshbackup.app:main --python-shebang='/usr/bin/env python' "
-      cmd += "-o #{PEX_FILE} --python=python -f #{DIST_DIR} -r #{tmp.path}"
-      sh(cmd)
+      sh(
+        'pex',
+        "--pex-root=#{tmpdir}",
+        "-r", "requirements.txt",
+        "-e", "zshbackup.app:main",
+        "--python-shebang=/usr/bin/env python",
+        "-o", PEX_FILE,
+        "--python=python",
+        "-f", DIST_DIR,
+        "-r", tmp.path
+      )
     end
   end
 end
@@ -58,6 +66,10 @@ task :run do
   Dir.mktmpdir do |tmpdir|
     sh "#{PEX_FILE} help"
   end
+end
+
+task :install do
+  install PEX_FILE, File.expand_path("~/local/bin/zshhist"), :mode => 0755
 end
 
 task :all => [:clean, :build, :run]

@@ -169,7 +169,6 @@ def cmd_stats(req):
 
     delta = (now - last_cmd_t)
 
-
     print(dedent("""\
       {hr:>5d} rows in the past hour
       {day:>5d} rows in the past day
@@ -179,7 +178,7 @@ def cmd_stats(req):
       hr=cmds_since(conn, now.shift(hours=-1).timestamp),
       day=cmds_since(conn, now.shift(hours=-24).timestamp),
       week=cmds_since(conn, now.shift(days=-7).timestamp),
-      last=str(last_cmd_t),
+      last=last_cmd_t.format("YYYY-MM-DD HH:mm:ss"),
       min=int(delta.total_seconds()/60),
       s=int(delta.total_seconds() % 60),
     )))

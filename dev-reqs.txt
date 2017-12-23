@@ -1,0 +1,3 @@
+# extras for development
+ipython==6.2.1
+pytest==3.3.1

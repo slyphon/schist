@@ -54,9 +54,9 @@ file PEX_FILE => WHEEL_FILE do
   end
 end
 
-CLEANUP = FileList['dist', 'zshbackup.egg-info', 'build', File.expand_path('~/.pex/install/zshbackup-*')]
-
 task :build => PEX_FILE
+
+CLEANUP = FileList['dist', 'zshbackup.egg-info', 'build', File.expand_path('~/.pex/install/zshbackup-*')]
 
 task :clean do
   rm_rf CLEANUP
@@ -76,6 +76,26 @@ task :install do
     install PEX_FILE, tmp.path, :mode => 0755
     mv tmp.path, INSTALL_DEST
   end
+end
+
+
+PYVERS = File.read(".python-version").chomp
+PYENV_ROOT = File.expand_path('~/.pyenv/versions')
+
+PYTHON_STDLIB_DIR = FileList[File.join(PYENV_ROOT, PYVERS.split('/', 2).first, 'lib', 'python*')]
+
+SITE_PKGS_ROOT = File.join(PYENV_ROOT, PYVERS, 'lib', 'python*', 'site-packages')
+
+REQUIREMENT_NAMES = File.readlines('requirements.txt').map do |n|
+  n.chomp[/^([a-zA-Z._-]+)={2}/, 1].tr('-', '_')
+end
+
+REQ_SRC = FileList[*REQUIREMENT_NAMES.map { |r| File.join(SITE_PKGS_ROOT, "#{r}*") }]
+
+CTAGSIFY = FileList['zshbackup/**/*.py'] + PYTHON_STDLIB_DIR + REQ_SRC
+
+task :ctags do
+  sh "ctags", "-R", *CTAGSIFY
 end
 
 task :all => [:clean, :build, :run]

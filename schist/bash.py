@@ -62,7 +62,7 @@ def history_iter(fp):
 
 def history_output(row_iter, fp):
   for row in row_iter:
-    print("#{0}".format(row.unix), file=fp)
+    print(_utf8("#{0}".format(row.unix)), file=fp)
     print(row.command, file=fp)
 
 

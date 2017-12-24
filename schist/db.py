@@ -20,7 +20,7 @@ from attr.validators import instance_of
 
 log = logging.getLogger(__name__)
 
-DEFAULT_DB_PATH = os.path.expanduser("~/.sh_hist_backup.sq3")
+DEFAULT_DB_PATH = os.path.expanduser("~/.schist.sq3")
 
 
 @attr.s(frozen=True, slots=True)
@@ -30,7 +30,7 @@ class Row(object):
       convert=lambda s: arrow.get(s)
     )
   command = attr.ib(
-      validator=instance_of(str),
+      validator=instance_of(six.string_types),
       convert=_utf8
     )
   counter = attr.ib(default=0, validator=instance_of(int))
@@ -47,6 +47,8 @@ class Row(object):
   def unix(self):
     return self.timestamp.timestamp
 
+  def __iter__(self):
+    return iter(attr.astuple(self))
 
 class AlreadyOpenException(Exception):
   pass
@@ -61,10 +63,10 @@ class HistConfig(object):
   histfile = attr.ib(validator=instance_of(str))
 
   # A function that takes a file pointer to the appropriate history file
-  # and yields a Row object
+  # and yields Row objects
   history_iter_fn = attr.ib()
 
-  # should be a function that takes a path to a sqlite3 db file and returns
+  # a function that takes a path to a sqlite3 db file and returns
   # an sqlite3 connection object
   db_conn_factory = attr.ib()
 
@@ -140,7 +142,7 @@ class HistConfig(object):
       """.format(table=self.table_name)
 
       with self.open_histfile() as fp:
-        cur.executemany(q, self.history_iter_fn(fp))
+        cur.executemany(q, (r.as_sql_dict() for r in self.history_iter_fn(fp)))
 
   def table_exists(self):
     xs = self.conn.execute(

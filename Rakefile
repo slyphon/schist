@@ -13,7 +13,7 @@ VERSION = find_version
 DIST_DIR = 'dist'
 BUILD_DIR = './build'
 WHEEL_FILE = "#{DIST_DIR}/slyphon_zshhist_backup-#{VERSION}-py3-none-any.whl"
-PEX_FILE = "#{DIST_DIR}/zshhist.pex"
+PEX_FILE = "#{DIST_DIR}/schist.pex"
 
 
 directory DIST_DIR
@@ -37,13 +37,13 @@ end
 file PEX_FILE => WHEEL_FILE do
   Dir.mktmpdir do |tmpdir|
     tempfile('other-reqs') do |tmp|
-      tmp.puts('zshbackup')
+      tmp.puts('schist')
       tmp.flush()
       sh(
         'pex',
         "--pex-root=#{tmpdir}",
         "-r", "requirements.txt",
-        "-e", "zshbackup.app:main",
+        "-e", "schist.app:main",
         "--python-shebang=/usr/bin/env python",
         "-o", PEX_FILE,
         "--python=python",
@@ -56,7 +56,7 @@ end
 
 task :build => PEX_FILE
 
-CLEANUP = FileList['dist', 'zshbackup.egg-info', 'build', File.expand_path('~/.pex/install/zshbackup-*')]
+CLEANUP = FileList['dist', 'schist.egg-info', 'build', File.expand_path('~/.pex/install/zshbackup-*')]
 
 task :clean do
   rm_rf CLEANUP
@@ -92,10 +92,16 @@ end
 
 REQ_SRC = FileList[*REQUIREMENT_NAMES.map { |r| File.join(SITE_PKGS_ROOT, "#{r}*") }]
 
-CTAGSIFY = FileList['zshbackup/**/*.py'] + PYTHON_STDLIB_DIR + REQ_SRC
+CTAGSIFY = FileList['schist/**/*.py'] + PYTHON_STDLIB_DIR + REQ_SRC
 
 task :ctags do
   sh "ctags", "-R", *CTAGSIFY
+end
+
+task :test do
+  ENV['PYTHONPATH'] = '.'
+  extra_args = (ENV['PYTEST_ARGS'] || '').split(' ')
+  sh "pytest", "tests", *extra_args
 end
 
 task :all => [:clean, :build, :run]

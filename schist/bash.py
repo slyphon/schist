@@ -28,7 +28,7 @@ def history_iter(fp):
       timestamp=ts,
       counter=count(ts.timestamp),
       command='\n'.join(ary)
-    ).as_sql_dict()
+    )
 
   # this solution kinda sucks because it requires reading the whole file into
   # a list.

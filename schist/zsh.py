@@ -35,7 +35,7 @@ def history_iter(fp):
 
       countdict[unix_ts] += 1
 
-      yield row.as_sql_dict()
+      yield row
     else:
       log.debug("BAD LINE: %r", line)
 

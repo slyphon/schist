@@ -59,14 +59,16 @@ def cmd_stats(req, conf):
 
     print(
       dedent("""\
-        {hr:>5d} rows in the past hour
-        {day:>5d} rows in the past day
-        {week:>5d} rows in the past week
+        {hr:>7d} rows in the past hour
+        {day:>7d} rows in the past day
+        {week:>7d} rows in the past week
+        {total:>7d} rows total
         last command backed up at: {last}
                         which was: {min}m {s}s ago""".format(
           hr=hist.cmds_since(now.shift(hours=-1)),
           day=hist.cmds_since(now.shift(hours=-24)),
           week=hist.cmds_since(now.shift(days=-7)),
+          total=hist.count(),
           last=last_cmd_t.format("YYYY-MM-DD HH:mm:ss"),
           min=int(delta.total_seconds()/60),
           s=int(delta.total_seconds() % 60),
@@ -104,8 +106,6 @@ def cmd_help(req, conf):
   req.print_help()
 
 HOME = os.environ['HOME']
-DEFAULT_DB_LOCATION = os.path.expanduser('~/.zsh_hist_backup.db')
-ZSHHIST_PATH = os.path.expanduser('~/.zshhistory')
 
 def main():
   parser = argparse.ArgumentParser(prog='shell-history-backup')
@@ -117,8 +117,10 @@ def main():
 
   parser.add_argument(
       '-p', '--hist-path', dest='histfile',
-      help='path to shell history file'
+      help='path to shell history file (defaults, bash: {bash}, zsh: {zsh})'.format(
+        bash=bash._DEFAULT_BASH_HIST, zsh=zsh._DEFAULT_ZSH_HIST
     )
+  )
 
   parser.add_argument(
       '-d', '--dbpath', dest='db_path',
@@ -145,16 +147,25 @@ def main():
   stats_p = sub.add_parser('stats')
   stats_p.set_defaults(func=cmd_stats)
 
-  help_p = sub.add_parser('help')
-  help_p.set_defaults(func=cmd_help)
+  # I couldn't figure out how to do this w/ argparse
+  if len(sys.argv) == 1 or len(sys.argv) == 2 and (
+      sys.argv[1] == 'help' or 
+      sys.argv[1] == '--help' or
+      sys.argv[1] == '-h'):
+    parser.print_help()
+    sys.exit(0)
 
   req = parser.parse_args()
   logging_setup(req.log_lvl)
 
   if req.shell == 'zsh':
     mod = zsh
-  else:
+  elif req.shell == 'bash':
     mod = bash
+  else:
+    req.print_help()
+    sys.exit(0)
+
 
   d = {'histfile': req.histfile, 'db_path': req.db_path}
 

@@ -2,11 +2,7 @@ require 'tempfile'
 require 'tmpdir'
 
 def find_version
-  line = File.open('setup.py') { |fp| fp.readlines.find { |n| n =~ /@@VERSION@@/ } }
-  raise "could not read version from setup.py" if line.nil?
-  v = line[/VERSION=['"]([^'"]+)['"]/, 1]
-  raise "failed to extract version from line: #{line}" if v.nil?
-  v
+  File.read('VERSION').chomp
 end
 
 VERSION = find_version
@@ -99,9 +95,7 @@ task :ctags do
 end
 
 task :test do
-  ENV['PYTHONPATH'] = '.'
-  extra_args = (ENV['PYTEST_ARGS'] || '').split(' ')
-  sh "pytest", "tests", *extra_args
+  sh "tox"
 end
 
 task :all => [:clean, :build, :run]

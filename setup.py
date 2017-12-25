@@ -1,15 +1,27 @@
 #!/usr/bin/env python
 
+from __future__ import absolute_import
+from __future__ import print_function
+
+import io
+import re
 from glob import glob
 from os.path import basename, dirname, join, splitext
 
 from setuptools import setup, find_packages
 
-VERSION='0.0.1' # @@VERSION@@
+# stolen from https://blog.ionelmc.ro/2014/05/25/python-packaging/#the-setup-script
+
+def read(*a, **kw):
+  return io.open(
+    join(dirname(__file__), *a),
+    encoding=kw.get('encoding', 'utf8')
+  ).read()
 
 setup(
   name='schist',
-  version=VERSION,
+  version=read('VERSION'),
+  license='MIT',
   description='backup your zshhistory to a sqlite3 db',
   author='Jonathan Simms',
   author_email='jds@slyphon.com',

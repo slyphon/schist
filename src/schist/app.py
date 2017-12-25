@@ -8,20 +8,17 @@ import logging
 import logging.config
 import os
 import os.path
-import re
-import sqlite3
 import sys
 
-from collections import defaultdict
-from contextlib import contextmanager
-from logging import DEBUG, INFO
 from textwrap import dedent
 
 import arrow
 
-from . import db, zsh, bash
+from . import zsh, bash
+
 
 log = logging.getLogger(__name__)
+
 
 def cmd_backup(req, conf):
   # change this to pass the HistConfig object instead of the parsed cmdline opts

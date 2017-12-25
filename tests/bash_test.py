@@ -34,6 +34,11 @@ ROWS = [
   db.Row(arrow.get(1447185931), '\n'.join(['ls x', 'ls y', 'ls z']))
 ]
 
+@pytest.fixture(autouse=True)
+def bogus_HOME(tmpdir, monkeypatch):
+  monkeypatch.setenv('HOME', str(tmpdir))
+
+
 @pytest.fixture
 def bash_fp(tmpdir):
   with tempfile.NamedTemporaryFile(mode='w+', dir=str(tmpdir)) as tmp:

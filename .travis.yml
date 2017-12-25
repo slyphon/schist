@@ -16,7 +16,7 @@ before_install:
 install:
   - mkdir -p ~/.pip
   - cp ci/pip.conf ~/.pip/pip.conf
-  - pip install -U wheel setuptools tox
+  - pip install -U setuptools tox
 
 script:
   - tox

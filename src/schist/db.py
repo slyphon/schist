@@ -59,7 +59,7 @@ class NoConnectionError(Exception):
 
 @attr.s(frozen=True, slots=True)
 class HistConfig(object):
-  table_name = attr.ib(validator=instance_of(str))
+  table_name = attr.ib(validator=instance_of(six.string_types))
 
   # A function that takes a file pointer to the appropriate history file
   # and yields Row objects
@@ -73,19 +73,15 @@ class HistConfig(object):
   # the rows to that file
   output_fn = attr.ib()
 
+  histfile = attr.ib(
+    validator=instance_of(six.string_types))
+
   _conn = attr.ib(default=None)
 
-  histfile = attr.ib(validator=optional(default=None, instance_of(str)))
+  db_path = attr.ib(
+    default=DEFAULT_DB_PATH,
+    validator=instance_of(six.string_types))
 
-  db_path = attr.ib(default=DEFAULT_DB_PATH, validator=instance_of(str))
-
-  @histfile.validator
-  def __histfile_validator(self, attrb, value):
-    if value is not None and not os.path.isfile(value):
-      raise ValueError(
-        "{name} must have a value pointing to an existing file. "
-        "Path {path} was not found.".format(name=attrb.name, path=value)
-      )
 
   @contextmanager
   def open(self):

@@ -1,5 +1,7 @@
 # schist
 
+![travis-ci](https://travis-ci.org/slyphon/schist.svg?branch=master)
+
 Python script to backup shell (zsh, bash) history to a sqlite3 database via cron/launchd. Syncs, merges, and dedupes current state on each run.
 
 ## Usage

@@ -15,7 +15,7 @@ import arrow
 import attr
 import six
 
-from attr.validators import instance_of
+from attr.validators import instance_of, optional
 
 
 log = logging.getLogger(__name__)
@@ -60,7 +60,6 @@ class NoConnectionError(Exception):
 @attr.s(frozen=True, slots=True)
 class HistConfig(object):
   table_name = attr.ib(validator=instance_of(str))
-  histfile = attr.ib(validator=instance_of(str))
 
   # A function that takes a file pointer to the appropriate history file
   # and yields Row objects
@@ -76,14 +75,16 @@ class HistConfig(object):
 
   _conn = attr.ib(default=None)
 
+  histfile = attr.ib(validator=optional(default=None, instance_of(str)))
+
   db_path = attr.ib(default=DEFAULT_DB_PATH, validator=instance_of(str))
 
   @histfile.validator
   def __histfile_validator(self, attrb, value):
-    if not os.path.isfile(value):
+    if value is not None and not os.path.isfile(value):
       raise ValueError(
         "{name} must have a value pointing to an existing file. "
-        "Path {path} was not found.".format(name=attib.name, path=value)
+        "Path {path} was not found.".format(name=attrb.name, path=value)
       )
 
   @contextmanager

@@ -18,7 +18,9 @@ Back in 2013 when I switched to zsh with [oh-my-zsh][] I thought "You know what?
 
 The solution: cut down on `HISTSIZE`, but back up the history file frequently, so that none of the commands that get pushed out of the file are lost.
 
-I found a few different scripts to do this, but the one that I liked the most was based on `sqlite3`, which is included in python by default, and this is my vacation hackweek project: schist.
+I found a few different scripts to do this, but the one that I liked the most was based on `sqlite3`, which is included in python by default. The nice thing is that this backup is locally available, easily queried, and as Berk pointed out: is _also_ backed up via the normal backup processes.
+
+The end result? Fast shell load times, complete history available immediately upon request, and enough history available "natively" to make the day-to-day convenient.
 
 ![galactic-brain][]
 

@@ -42,7 +42,7 @@ def history_iter(fp):
 
 def history_output(row_iter, fp):
   for row in row_iter:
-    print(": {ts}:0;{cmd}".format(ts=str(row.timestamp.timestamp), cmd=row.command), file=fp)
+    print(u": {ts}:0;{cmd}".format(ts=str(row.timestamp.timestamp), cmd=row.command), file=fp)
 
 
 _DEFAULT_ZSH_HIST = os.path.expanduser("~/.zsh_history")

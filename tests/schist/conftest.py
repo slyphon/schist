@@ -14,3 +14,6 @@ def memory_db():
   finally:
     conn.close
 
+@pytest.fixture(autouse=True)
+def bogus_HOME(tmpdir, monkeypatch):
+  monkeypatch.setenv('HOME', str(tmpdir))

@@ -33,7 +33,6 @@ class Row(object):
       validator=instance_of(six.string_types),
       convert=_utf8
     )
-  counter = attr.ib(default=0, validator=instance_of(int))
 
   def as_sql_dict(self):
     d = attr.asdict(self)
@@ -118,9 +117,8 @@ class HistConfig(object):
     return self.conn.execute("""\
         CREATE TABLE IF NOT EXISTS {table} (
           timestamp BIGINT NOT NULL,
-          counter INTEGER NOT NULL DEFAULT 0,
           command text NOT NULL,
-          PRIMARY KEY (timestamp, counter)
+          PRIMARY KEY (timestamp, command)
         )
       """.format(
         table=self.table_name,
@@ -131,8 +129,8 @@ class HistConfig(object):
       cur = self.conn.cursor()
 
       q = u"""\
-        REPLACE INTO {table} ('timestamp', 'counter', 'command')
-          VALUES(:timestamp, :counter, :command)
+        REPLACE INTO {table} ('timestamp', 'command')
+          VALUES(:timestamp, :command)
       """.format(table=self.table_name)
 
       with self.open_histfile() as fp:
@@ -150,7 +148,7 @@ class HistConfig(object):
     with open(self.histfile, 'rb') as fp:
       yield fp
 
-  _ROWS_SQL = "select timestamp, counter, command from {table} order by rowid {limit}"
+  _ROWS_SQL = "select timestamp, command from {table} order by rowid {limit}"
 
   def rows(self, limit=None):
     q = self._ROWS_SQL.format(

@@ -55,7 +55,6 @@ def test_zsh_history_output(row_iter):
   assert sio.getvalue() == ZSH_HISTORY
 
 
-
 @pytest.fixture
 def zsh_config(zsh_fp, memory_db):
   yield zsh.CONFIG.evolve(

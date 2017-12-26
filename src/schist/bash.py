@@ -16,17 +16,9 @@ log = logging.getLogger(__name__)
 _TS_RE = re.compile(r"""^#\d+$""")
 
 def history_iter(fp):
-  countdict = defaultdict(int)
-
-  def count(k):
-    v = countdict[k]
-    countdict[k] += 1
-    return v
-
   def mkrow(ts, ary):
     return Row(
       timestamp=ts,
-      counter=count(ts.timestamp),
       command='\n'.join(ary)
     )
 

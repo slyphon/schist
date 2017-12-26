@@ -14,12 +14,11 @@ except ImportError:
 
 def test_db_Row_iter():
   now = arrow.now()
-  row = db.Row(now, 'foo', 69)  # nice.
+  row = db.Row(now, 'foo')
 
-  ts, cmd, cnt = row
+  ts, cmd = row
   assert ts == now
   assert cmd == 'foo'
-  assert cnt == 69  # nice.
 
 
 @pytest.fixture

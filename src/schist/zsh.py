@@ -17,8 +17,6 @@ _ZSH_REGEX = re.compile(r"""^: (?P<ts>\d+):\d+;(?P<cmd>.*)$""")
 
 
 def history_iter(fp):
-  countdict = defaultdict(int)
-
   for line in fp:
     m = _ZSH_REGEX.match(_utf8(line))
     if m:
@@ -29,11 +27,8 @@ def history_iter(fp):
 
       row = Row(
         timestamp=ts,
-        counter=countdict[unix_ts],
         command=_utf8(m.group('cmd'))
       )
-
-      countdict[unix_ts] += 1
 
       yield row
     else:

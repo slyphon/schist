@@ -4,6 +4,12 @@
 
 Python script to backup shell (zsh, bash) history to a sqlite3 database via cron/launchd. Syncs, merges, and dedupes current state on each run.
 
+## y tho
+
+<blockquote class="twitter-tweet" data-lang="en"><p lang="und" dir="ltr"> <a href="https://t.co/Te7E179UQ9">pic.twitter.com/Te7E179UQ9</a></p>&mdash; Berk D. Demir (@bd) <a href="https://twitter.com/bd/status/945038934970531840?ref_src=twsrc%5Etfw">December 24, 2017</a></blockquote>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+
 ## Usage
 
 Run a backup of shell history, (by default, writes the db at `~/.schist.sq3`)

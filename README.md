@@ -8,7 +8,6 @@ Python script to backup shell (zsh, bash) history to a sqlite3 database via cron
 
 As my good friend and favorite debate partner [@bd][] asked:
 
-![y tho][y-tho]
 <img src="https://raw.githubusercontent.com/slyphon/schist/_website/y-tho.jpg" width="50%" height="50%"/>
 
 "shell history is precious but it's kept safe with normal backups."
@@ -25,7 +24,6 @@ I found a few different scripts to do this, but the one that I liked the most wa
 
 
 [@bd]: https://twitter.com/bd
-[y-tho]: https://pbs.twimg.com/media/DR1z5WgU8AA0vWn.jpg:large
 [oh-my-zsh]: https://github.com/robbyrussell/oh-my-zsh
 [galactic-brain]: https://raw.githubusercontent.com/slyphon/schist/_website/galactic-zsh-history.jpg
 

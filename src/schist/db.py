@@ -35,9 +35,6 @@ class Row(object):
     )
   counter = attr.ib(default=0, validator=instance_of(int))
 
-  def evolve(self, **kw):
-    return attr.evolve(self, **kw)
-
   def as_sql_dict(self):
     d = attr.asdict(self)
     d['timestamp'] = self.timestamp.timestamp

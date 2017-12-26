@@ -6,7 +6,7 @@ Python script to backup shell (zsh, bash) history to a sqlite3 database via cron
 
 ## y tho
 
-As my good friend and favorite debate partner [@bd][] asked:
+As my good friend and favorite systems administrator [@bd][] asked:
 
 <img src="https://raw.githubusercontent.com/slyphon/schist/_website/y-tho.jpg" width="50%" height="50%"/>
 

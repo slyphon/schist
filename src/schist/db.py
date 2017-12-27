@@ -78,7 +78,6 @@ class HistConfig(object):
     default=DEFAULT_DB_PATH,
     validator=instance_of(six.string_types))
 
-
   @contextmanager
   def open(self):
     if self._conn is not None:
@@ -91,6 +90,13 @@ class HistConfig(object):
 
   def _close(self):
     if self._conn is not None:
+      # from the sqlite3 docs:
+      #
+      #   The PRAGMA optimize command will automatically run ANALYZE on individual tables on an
+      #   as-needed basis. The recommended practice is for applications to invoke the PRAGMA optimize
+      #   statement just before closing each database connection.
+      #
+      self._conn.execute("PRAGMA optimize")
       self._conn.close()
 
   def _open(self):
@@ -135,6 +141,17 @@ class HistConfig(object):
 
       with self.open_histfile() as fp:
         cur.executemany(q, (r.as_sql_dict() for r in self.history_iter_fn(fp)))
+
+  def search(self, term, limit=25):
+    """do a text search for a command"""
+    with self.conn:
+      q = u"""\
+        SELECT * from {table} where command LIKE :term ORDER BY timestamp DESC LIMIT :limit
+      """.format(table=self.table_name)
+
+      for r in self.conn.execute(q, {'term': term, 'limit': int(limit)}):
+        yield Row(**r)
+
 
   def table_exists(self):
     xs = self.conn.execute(

@@ -14,7 +14,7 @@ As my good friend and favorite bespectacled neckbeard [@bd][] asked:
 
 I mean, sure, fair.
 
-Back in 2013 when I switched to zsh with [oh-my-zsh][] I thought "You know what? I want all of my history!" and set `HISTSIZE` to a ludicrously large number: `1250000`. Turns out, 5 years later, this was causing my shell load times to take 7-8 seconds. This may not seem like a long time...nah, it's an eternity. After doing some experimentation, I figured out that my `.zsh_history` had grown to ~ 5.3 MB, and had roughly 120k entries in it. I could cut down `HISTSIZE`, but if you're like me, shell history is one of the critical tools for doing my job. Once I figure out a command, I want to be able to go back and find it, rather than have to dig through man pages again.
+Back in 2013 when I switched to zsh with [oh-my-zsh][] I thought "You know what? I want all of my history!" and set `HISTSIZE` to a ludicrously large number: `1250000`. Turns out, 5 years later, this was causing my shell load times to take 7-8 seconds. This may not seem like a long time...nah, it's an eternity. After doing some experimentation, I figured out that my `.zsh_history` had grown to ~ 5.3 MB, and had roughly 120k entries in it. I could cut down `HISTSIZE`, but if you're like me, shell history is one of the critical tools for doing the job. Once I figure out a command, I want to be able to go back and find it, rather than have to dig through man pages again.
 
 The solution: cut down on `HISTSIZE`, but back up the history file frequently, so that none of the commands that get pushed out of the file are lost.
 
@@ -38,11 +38,11 @@ Run a backup of shell history, (by default, writes the db at `~/.schist.sq3`)
 ```
 # for zsh:
 
-$ schist zsh backup
+$ schist backup zsh
 
 # for bash:
 
-$ schist bash backup
+$ schist backup bash
 
 ```
 
@@ -50,11 +50,17 @@ Dump out the complete history in a shell compatible format with 'restore':
 
 
 ```
-$ schist zsh restore -
+$ schist restore zsh -
+```
+
+Query the history using sql 'LIKE' syntax (something I always wanted to be able to do in regular shell incremental history search):
+
+```
+$ schist search zsh 'pyenv %wat%'
 ```
 
 Show some stats on the last backup time, and the number of commands over the past hour, day, and week.
 
 ```
-$ schist zsh stats
+$ schist stats zsh
 ```

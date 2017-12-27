@@ -41,7 +41,6 @@ def histconfig():
 
 
 def test_db_HistConfig_open_when_already_open(histconfig):
-
   with histconfig.open() as hist:
     with pytest.raises(db.AlreadyOpenException):
       with hist.open() as nope:

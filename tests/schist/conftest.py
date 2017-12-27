@@ -12,7 +12,7 @@ def memory_db():
   try:
     yield conn
   finally:
-    conn.close
+    conn.close()
 
 @pytest.fixture(autouse=True)
 def bogus_HOME(tmpdir, monkeypatch):

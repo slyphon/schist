@@ -110,3 +110,7 @@ def test_bash_integration(bash_fp, bash_config, memory_db):
     assert hist.cmds_since(ROWS[1].timestamp) == 2
 
     assert hist.last_cmd() == ROWS[-1].timestamp
+
+    res = [r for r in hist.search("echo%bar%")]
+    assert len(res) == 1
+    assert res[0] == ROWS[1]

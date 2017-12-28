@@ -7,7 +7,7 @@ import re
 from collections import defaultdict
 
 from .common import _utf8, _mk_conn
-from .db import HistConfig, Row
+from .db import Row, ZSH
 
 import arrow
 
@@ -25,10 +25,7 @@ def history_iter(fp):
 
       unix_ts = ts.timestamp
 
-      row = Row(
-        timestamp=ts,
-        command=_utf8(m.group('cmd'))
-      )
+      row = Row(timestamp=ts, command=_utf8(m.group('cmd')), shell=ZSH)
 
       yield row
     else:
@@ -40,12 +37,4 @@ def history_output(row_iter, fp):
     print(u": {ts}:0;{cmd}".format(ts=str(row.timestamp.timestamp), cmd=row.command), file=fp)
 
 
-_DEFAULT_ZSH_HIST = os.path.expanduser("~/.zsh_history")
-
-CONFIG = HistConfig(
-  table_name="zsh_history",
-  histfile=_DEFAULT_ZSH_HIST,
-  db_conn_factory=_mk_conn,
-  history_iter_fn=history_iter,
-  output_fn=history_output,
-)
+DEFAULT_HISTFILE = os.path.expanduser("~/.zsh_history")

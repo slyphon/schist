@@ -12,31 +12,64 @@ import sys
 
 from textwrap import dedent
 
-import arrow
+from . import bash, db, zsh
+from .common import _mk_conn, filter_none_v
 
-from . import zsh, bash
+import arrow
+import attr
 
 
 log = logging.getLogger(__name__)
 
 
-def cmd_backup(req, conf):
-  # change this to pass the HistConfig object instead of the parsed cmdline opts
+def _db_for(req):
+  return db.DB(**filter_none_v(
+    db_conn_factory=_mk_conn,
+    db_path=req.db_path,
+  ))
 
-  with conf.open() as hist:
-    if not hist.table_exists():
-      hist.create_table()
+@attr.s(frozen=True, slots=True)
+class Config(object):
+  mod = attr.ib()
+  shell = attr.ib()
+  histfile = attr.ib()
 
-    initial_count = hist.count()
-    hist.insert()
-    log.info("inserted {0} rows".format(hist.count() - initial_count))
+SHELL_CONFIG = {
+  'bash': Config(bash, db.BASH, bash.DEFAULT_HISTFILE),
+  'zsh': Config(zsh, db.ZSH, bash.DEFAULT_HISTFILE),
+}
 
 
-def cmd_restore(req, conf):
-  with conf.open() as hist:
-    hist.init_db()
+def cmd_backup(req):
+  conf = SHELL_CONFIG[req.shell]
+
+  backup = db.Backup(**filter_none_v(
+    shell=conf.shell,
+    db=_db_for(req),
+    history_iter_fn=conf.mod.history_iter,
+    histfile=req.histfile or conf.histfile
+  ))
+
+  with backup.open() as b:
+    b.init_db()
+
+    initial_count = b.count()
+    b.insert()
+    log.info("inserted {0} rows".format(b.count() - initial_count))
+
+
+def cmd_restore(req):
+  conf = SHELL_CONFIG[req.format]
+
+  restore = db.Query(**filter_none_v(
+    db=_db_for(req),
+    output_fn=conf.mod.history_output,
+  ))
+
+  with restore.open() as r:
+    r.init_db()
     try:
-      hist.restore(req.output)
+      r.restore(req.output, shell=req.shell, limit=req.limit)
     except IOError as e:
       if e.errno == errno.EPIPE:
         return
@@ -127,7 +160,7 @@ def cmd_help(req, conf):
 def common_args(ap, hist_path=True):
   ap.add_argument(
       'shell',
-      choices=['z', 'zsh', 'b', 'bash'],
+      choices=['zsh', 'bash'],
       help="the shell history to process"
     )
 
@@ -135,13 +168,45 @@ def common_args(ap, hist_path=True):
     ap.add_argument(
         '-p', '--hist-path', dest='histfile',
         help='path to shell history file (defaults, bash: {bash}, zsh: {zsh})'.format(
-          bash=bash._DEFAULT_BASH_HIST, zsh=zsh._DEFAULT_ZSH_HIST
+          bash=bash.DEFAULT_HISTFILE, zsh=zsh.DEFAULT_HISTFILE
       )
     )
 
 
+DESCRIPTION = """\
+Backup shell (zsh, bash) history to a sqlite3 database via cron/launchd. Syncs, merges, and dedupes
+current state on each run. Provides restore and search commands for querying the db.
+
+Example use:
+
+# Back up zsh
+
+  $ schist backup zsh
+
+# Back up bash
+
+  $ schist backup bash
+
+# dump out shell history for zsh in a .zsh_history compatible format to stdout
+
+  4 schist restore zsh -
+
+# or to a file:
+
+  $ schist restore zsh ~/.zsh_history
+
+# show some stats on bash
+
+  $ schist stats bash
+
+# search for commands matching a substring, with SQL LIKE globbing syntax:
+
+  $ schist search zsh 'curl%example%'
+
+"""
+
 def main(*args):
-  ap = argparse.ArgumentParser(prog='schist')
+  ap = argparse.ArgumentParser(prog='schist', description=DESCRIPTION)
 
   ap.set_defaults(
     print_help=ap.print_help,
@@ -157,9 +222,9 @@ def main(*args):
 
   ap.add_argument(
     '-d', '--dbpath', dest='db_path',
+    default=None,
     help='path to the sqlite db file'
   )
-
 
   sub = ap.add_subparsers()
   backup_p = sub.add_parser('backup')
@@ -168,8 +233,29 @@ def main(*args):
 
   restore_p = sub.add_parser('restore')
   restore_p.set_defaults(func=cmd_restore)
+
+  restore_p.add_argument(
+    '-s', '--shell', choices=['bash', 'zsh', 'all'],
+    default=None,
+    help=(
+      "Pick which shell history to output, The 'all' option "
+      "will output the merged history of both shells.")
+  )
+
+  restore_p.add_argument(
+    '--limit',
+    type=int,
+    default=None,
+    help="limit the number of rows we restore (default: no limit)"
+  )
+
+  restore_p.add_argument('format',
+    choices=['zsh', 'bash'],
+    help=("output format of the history file (you can "
+          "output your zsh history in bash format and vice versa this way).")
+  )
+
   restore_p.add_argument("output", type=argparse.FileType('w'), nargs='?', default='-')
-  common_args(restore_p)
 
   stats_p = sub.add_parser('stats')
   stats_p.set_defaults(func=cmd_stats)
@@ -201,7 +287,6 @@ def main(*args):
   search_args(sub.add_parser('search'))
   search_args(sub.add_parser('s'))
 
-
   ap.set_defaults(func=cmd_help)
 
   # I couldn't figure out how to do this w/ argparse
@@ -215,21 +300,7 @@ def main(*args):
   req = ap.parse_args(list(args))
   logging_setup(req.log_lvl)
 
-  if req.shell == 'zsh' or req.shell == 'z':
-    mod = zsh
-  elif req.shell == 'bash' or req.shell == 'b':
-    mod = bash
-  else:
-    req.print_help()
-    sys.exit(0)
-
-  d = {'histfile': req.histfile, 'db_path': req.db_path}
-
-  conf = mod.CONFIG.evolve(
-    **{k: v for k, v in d.items() if v is not None}
-  )
-
-  req.func(req, conf)
+  req.func(req)
 
 
 if __name__ == '__main__':

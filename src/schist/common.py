@@ -16,3 +16,8 @@ def _mk_conn(path, *a):
   conn.text_factory = sqlite3.OptimizedUnicode
   conn.row_factory = sqlite3.Row
   return conn
+
+def filter_none_v(**kw):
+  """filter out none values from kw"""
+  return {k: v for k, v in kw.items() if v is not None}
+
